@@ -1,7 +1,7 @@
 {
   "minimum_chrome_version": "103",
   "manifest_version": 3,
-  "name": "PDF Viewer",
+  "name": "PDF Viewer for Vimium C",
   "version": "PDFJSSCRIPT_VERSION",
   "description": "Uses HTML5 to display PDF files directly in the browser.",
   "icons": {
@@ -13,6 +13,7 @@
     "alarms",
     "declarativeNetRequestWithHostAccess",
     "webRequest",
+    "webRequestBlocking",
     "tabs",
     "webNavigation",
     "storage"
@@ -38,7 +39,7 @@
   },
   "options_page": "options/options.html",
   "background": {
-    "service_worker": "background.js"
+    "page": "background.html"
   },
   "incognito": "split",
   "web_accessible_resources": [
@@ -49,6 +50,7 @@
         "https:/*",
         "file:/*",
         "chrome-extension:/*",
+        "moz-extension:/*",
         "blob:*",
         "data:*",
         "filesystem:/*",
@@ -57,5 +59,11 @@
       "matches": ["<all_urls>"],
       "extension_ids": ["*"]
     }
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "pdfviewer4vimiumc@firefox.org",
+      "strict_min_version": "125.0"
+    }
+  }
 }
