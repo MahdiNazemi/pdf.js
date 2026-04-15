@@ -28,15 +28,20 @@ chrome.storage.session.get({ hasPdfRedirector: false }, async items => {
   if (items?.hasPdfRedirector) {
     return;
   }
-  const rules = await chrome.declarativeNetRequest.getDynamicRules();
-  if (rules.length) {
-    // Dynamic rules persist across extension updates. We don't expect other
-    // dynamic rules, so just remove them all.
-    await chrome.declarativeNetRequest.updateDynamicRules({
-      removeRuleIds: rules.map(r => r.id),
-    });
+
+  try {
+    const rules = await chrome.declarativeNetRequest.getDynamicRules();
+    if (rules.length) {
+      // Dynamic rules persist across extension updates. We don't expect other
+      // dynamic rules, so just remove them all.
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: rules.map(r => r.id),
+      });
+    }
+    await registerPdfRedirectRule();
+  } catch (error) {
+    // DNR not supported; the webRequest fallback below handles PDF redirection.
   }
-  await registerPdfRedirectRule();
 
   // Only set the flag in the end, so that we know for sure that all
   // asynchronous initialization logic has run. If not, then we will run the
@@ -366,3 +371,51 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   }
   return undefined;
 });
+
+// Firefox fallback: webRequest-based PDF redirection for browsers that don't
+// support DNR responseHeaders conditions. Uses `return { redirectUrl }` for
+// an in-place transparent redirect (no extra history entry), so back/forward
+// work correctly. webRequestBlocking is supported in Firefox MV3.
+if (typeof chrome.webRequest?.onHeadersReceived?.addListener === "function") {
+  chrome.webRequest.onHeadersReceived.addListener(
+    function (details) {
+      if (details.method !== "GET") {
+        return;
+      }
+
+      var contentType = details.responseHeaders
+        .find(h => h.name.toLowerCase() === "content-type")
+        ?.value.toLowerCase()
+        .split(";")[0]
+        .trim();
+
+      if (
+        contentType !== "application/pdf" &&
+        !details.url.toLowerCase().includes(".pdf")
+      ) {
+        return;
+      }
+
+      if (details.url.indexOf("pdfjs.action=download") >= 0) {
+        return;
+      }
+
+      var cd = details.responseHeaders.find(
+        h => h.name.toLowerCase() === "content-disposition"
+      )?.value;
+      // Respect Content-Disposition:attachment in subframes, but always open
+      // in the viewer in the main frame (servers are often misconfigured).
+      if (
+        cd &&
+        cd.toLowerCase().startsWith("attachment") &&
+        details.frameId !== 0
+      ) {
+        return;
+      }
+
+      return { redirectUrl: getViewerURL(details.url) };
+    },
+    { urls: ["<all_urls>"], types: ["main_frame", "sub_frame"] },
+    ["blocking", "responseHeaders"]
+  );
+}
