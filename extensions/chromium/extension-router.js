@@ -25,6 +25,7 @@ limitations under the License.
     "https",
     "file",
     "chrome-extension",
+    "moz-extension",
     "blob",
     "data",
     // Chromium OS
