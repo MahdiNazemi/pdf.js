@@ -43,9 +43,16 @@ if (typeof PDFJSDev === "undefined" || !PDFJSDev.test("CHROME")) {
     defaultUrl = queryString.slice(4);
   }
 
-  // Example: chrome-extension://.../http://example.com/file.pdf
-  const humanReadableUrl = "/" + defaultUrl + location.hash;
-  history.replaceState(history.state, "", humanReadableUrl);
+  // In Firefox (moz-extension:// protocol), skip URL rewriting to a "pretty"
+  // URL. Chrome uses a Service Worker fetch handler (extension-router.js) to
+  // resolve pretty URLs on refresh/navigation, but Firefox's background page
+  // cannot intercept navigations this way. Keeping the ?file= parameter in the
+  // URL ensures refresh, back, and forward all work correctly.
+  // Example (Chrome): chrome-extension://.../http://example.com/file.pdf
+  if (location.protocol !== "moz-extension:") {
+    const humanReadableUrl = "/" + defaultUrl + location.hash;
+    history.replaceState(history.state, "", humanReadableUrl);
+  }
 
   AppOptions.set("defaultUrl", defaultUrl);
 })();
