@@ -181,7 +181,7 @@ const defaultOptions = {
   },
   defaultZoomValue: {
     /** @type {string} */
-    value: "",
+    value: "page-width",
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
   disableHistory: {
@@ -292,7 +292,7 @@ const defaultOptions = {
   },
   externalLinkTarget: {
     /** @type {number} */
-    value: 0,
+    value: 2,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
   highlightEditorColors: {
@@ -309,7 +309,7 @@ const defaultOptions = {
   },
   ignoreDestinationZoom: {
     /** @type {boolean} */
-    value: false,
+    value: true,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
   imageResourcesPath: {
@@ -371,7 +371,7 @@ const defaultOptions = {
   },
   sidebarViewOnLoad: {
     /** @type {number} */
-    value: -1,
+    value: 0,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
   scrollModeOnLoad: {
@@ -391,7 +391,7 @@ const defaultOptions = {
   },
   viewerCssTheme: {
     /** @type {number} */
-    value: typeof PDFJSDev !== "undefined" && PDFJSDev.test("CHROME") ? 2 : 0,
+    value: 0,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE,
   },
   viewOnLoad: {
