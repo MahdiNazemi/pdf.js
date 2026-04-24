@@ -389,10 +389,7 @@ if (typeof chrome.webRequest?.onHeadersReceived?.addListener === "function") {
         .split(";")[0]
         .trim();
 
-      if (
-        contentType !== "application/pdf" &&
-        !details.url.toLowerCase().includes(".pdf")
-      ) {
+      if (contentType !== "application/pdf") {
         return;
       }
 
