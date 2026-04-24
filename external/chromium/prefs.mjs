@@ -135,6 +135,11 @@ const prefsMetadata = {
       "The theme to use.\n0 = Use system theme.\n1 = Light theme.\n2 = Dark theme.",
     enum: [0, 1, 2],
   },
+  invertPageColors: {
+    title: "Invert PDF colors in dark mode",
+    description:
+      "When enabled, PDF page colors are inverted when the UI is in dark mode. Enabled by default when using the system theme.",
+  },
   viewOnLoad: {
     title: "View position on load",
     description:
