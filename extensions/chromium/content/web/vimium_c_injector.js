@@ -1,5 +1,34 @@
 "use strict";
 (function () {
+  // Vimium-C runs as a separate Firefox extension. Since its MV3 migration
+  // (v2.11), Firefox enforces stricter cross-extension realm isolation,
+  // and Vimium-C's focus handler throws "Permission denied" while reading
+  // properties on our viewer's DOM elements. The handler never registers
+  // the find input as focused, so j/k/d/u are treated as scroll commands
+  // even when the user is typing in the search bar. Driving Vimium-C's
+  // insertMode externally via runtime.sendMessage didn't reliably reset
+  // on find-bar close, so we suppress at our own listener instead:
+  // capture-phase listener that drops bare printable keys while an
+  // editable element is focused. Modifier-combo and named keys (Escape,
+  // Enter, Tab, ArrowKeys, F3, Alt+A, etc.) pass through unchanged so
+  // PDF.js's find-bar shortcuts keep working.
+  function isEditable(el) {
+    if (!el || el === document.body) return false;
+    var tag = el.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+    return el.isContentEditable === true;
+  }
+  function suppressIfEditing(e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key && e.key.length > 1) return;
+    if (isEditable(document.activeElement)) {
+      e.stopImmediatePropagation();
+    }
+  }
+  window.addEventListener("keydown", suppressIfEditing, true);
+  window.addEventListener("keypress", suppressIfEditing, true);
+  window.addEventListener("keyup", suppressIfEditing, true);
+
   var VimiumCHandler = function(code) {
     if (code !== 2) {
       if (code === 3) {
